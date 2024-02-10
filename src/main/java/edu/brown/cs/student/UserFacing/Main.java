@@ -123,7 +123,6 @@ public final class Main {
   }
   public List<CreatorFromRow<CSVString>> loadCSV(String filepath)
       throws FactoryFailureException, FileNotFoundException {
-    String temp;
     CSVParser<CreatorFromRow<CSVString>> parser =
         new CSVParser<>(true, new CSVString(), new FileReader(filepath));
     return parser.getParsed();
