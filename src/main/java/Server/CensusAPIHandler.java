@@ -1,5 +1,7 @@
 package Server;
 
+import RIData.CensusAPIUtilities;
+import RIData.CensusData;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -14,22 +16,9 @@ import spark.Response;
 import spark.Route;
 
 public class CensusAPIHandler implements Route {
-  @Override
-  public Object handle(Request request, Response response) {
-    // If you are interested in how parameters are received, try commenting out and
-    // printing these lines! Notice that requesting a specific parameter requires that parameter
-    // to be fulfilled.
-    // If you specify a queryParam, you can access it by appending ?parameterName=name to the
-    // endpoint
-    // ex. http://localhost:3232/activity?participants=num
-    Set<String> params = request.queryParams();
-    //     System.out.println(params);
-    String participants = request.queryParams("participants");
-    //     System.out.println(participants);
-
-    // Creates a hashmap to store the results of the request
-    Map<String, Object> responseMap = new HashMap<>();
-    HashMap<String, String> stateMap = new HashMap<>();
+  private Map<String, String> stateMap;
+  public CensusAPIHandler(){
+    this.stateMap = new HashMap<>();
     stateMap.put("Alabama", "01");
     stateMap.put("Alaska", "02");
     stateMap.put("Arizona", "04");
@@ -82,15 +71,31 @@ public class CensusAPIHandler implements Route {
     stateMap.put("Wisconsin", "55");
     stateMap.put("Wyoming", "56");
     stateMap.put("Puerto Rico", "72");
+  }
+  @Override
+  public Object handle(Request request, Response response) {
+    // If you are interested in how parameters are received, try commenting out and
+    // printing these lines! Notice that requesting a specific parameter requires that parameter
+    // to be fulfilled.
+    // If you specify a queryParam, you can access it by appending ?parameterName=name to the
+    // endpoint
+    // ex. http://localhost:3232/activity?participants=num
+    Set<String> params = request.queryParams();
+    //     System.out.println(params);
+    String participants = request.queryParams("participants");
+    //     System.out.println(participants);
+
+    // Creates a hashmap to store the results of the request
+    Map<String, Object> responseMap = new HashMap<>();
 
     try {
       // Sends a request to the API and receives JSON back
-//      String dataJson = this.sendRequest(participants);
+      String dataJson = this.sendCountyRequest(participants);
       // Deserializes JSON into an Activity
-//      CensusData censusData = CensusAPIUtilities.deserializeData(dataJson);
+      CensusData censusData = CensusAPIUtilities.deserializeData(dataJson);
       // Adds results to the responseMap
       responseMap.put("result", "success");
-//      responseMap.put("activity", censusData);
+      responseMap.put("activity", censusData);
       return responseMap;
     } catch (Exception e) {
       e.printStackTrace();
@@ -102,14 +107,39 @@ public class CensusAPIHandler implements Route {
     return responseMap;
   }
 
-  private String sendRequest(String year, String county, String state)
+  private String sendCountyRequest(String year, String county, String state)
       throws URISyntaxException, IOException, InterruptedException {
     // Build a request to this BoredAPI. Try out this link in your browser, what do you see?
     // TODO 1: Looking at the documentation, how can we add to the URI to query based
     // on participant number?
     HttpRequest ACSApiRequest =
         HttpRequest.newBuilder()
-            .uri(new URI("https://api.census.gov/data/" + year + "/acs/acs1/subject/variables?get=NAME,S2802_C03_022E&for=county:" + county + "&in=state:" + state))
+            .uri(new URI("https://api.census.gov/data/" + year + "/acs/acs1/subject/variables?get=NAME,S2802_C03_022E&for=county:*&in=state:" + state))
+            .GET()
+            .build();
+
+    // Send that API request then store the response in this variable. Note the generic type.
+    HttpResponse<String> sentACIApiResponse =
+        HttpClient.newBuilder()
+            .build()
+            .send(ACSApiRequest, HttpResponse.BodyHandlers.ofString());
+
+    // What's the difference between these two lines? Why do we return the body? What is useful from
+    // the raw response (hint: how can we use the status of response)?
+    System.out.println(sentACIApiResponse);
+    System.out.println(sentACIApiResponse.body());
+
+    return sentACIApiResponse.body();
+  }
+
+  private String sendStateRequest(String year, String state)
+      throws URISyntaxException, IOException, InterruptedException {
+    // Build a request to this BoredAPI. Try out this link in your browser, what do you see?
+    // TODO 1: Looking at the documentation, how can we add to the URI to query based
+    // on participant number?
+    HttpRequest ACSApiRequest =
+        HttpRequest.newBuilder()
+            .uri(new URI("https://api.census.gov/data/" +year+"/dec/sf1?get=NAME&for=county:*&in=state:" + ))
             .GET()
             .build();
 

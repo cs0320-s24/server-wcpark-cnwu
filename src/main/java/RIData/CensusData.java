@@ -3,7 +3,9 @@ package RIData;
 
 public class CensusData {
   private String state;
+  private String stateCode;
   private String county;
+  private String countyCode;
   private String percentage;
   public CensusData(){
 
