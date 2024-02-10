@@ -1,7 +1,10 @@
 package Server;
 
+import RIData.CRDUtilities;
 import RIData.CensusAPIUtilities;
 import RIData.CountyRequestData;
+import RIData.SRDUtilities;
+import RIData.StateRequestData;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -82,7 +85,10 @@ public class CensusAPIHandler implements Route {
     // ex. http://localhost:3232/activity?participants=num
     Set<String> params = request.queryParams();
     //     System.out.println(params);
-    String participants = request.queryParams("participants");
+    String year = request.queryParams("year");
+    String county = request.queryParams("county");
+    String state = request.queryParams("state");
+
     //     System.out.println(participants);
 
     // Creates a hashmap to store the results of the request
@@ -90,12 +96,11 @@ public class CensusAPIHandler implements Route {
 
     try {
       // Sends a request to the API and receives JSON back
-      String dataJson = this.sendStateRequest(year, state);
+      String stateJson = this.sendStateRequest(year, state);
       // Deserializes JSON into an Activity
-      CountyRequestData censusData = CensusAPIUtilities.deserializeData(dataJson);
-      // Adds results to the responseMap
-      responseMap.put("result", "success");
-      responseMap.put("activity", censusData);
+      StateRequestData stateData = SRDUtilities.deserializeData(stateJson);
+      String countyJson = this.sendCountyRequest(year, stateData.getCounty(), state);
+      CountyRequestData countyData = CRDUtilities.deserializeData(countyJson);
       return responseMap;
     } catch (Exception e) {
       e.printStackTrace();
