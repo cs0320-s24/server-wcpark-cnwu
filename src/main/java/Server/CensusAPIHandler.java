@@ -1,7 +1,7 @@
 package Server;
 
 import RIData.CensusAPIUtilities;
-import RIData.CensusData;
+import RIData.CountyRequestData;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -90,9 +90,9 @@ public class CensusAPIHandler implements Route {
 
     try {
       // Sends a request to the API and receives JSON back
-      String dataJson = this.sendCountyRequest(participants);
+      String dataJson = this.sendStateRequest(year, state);
       // Deserializes JSON into an Activity
-      CensusData censusData = CensusAPIUtilities.deserializeData(dataJson);
+      CountyRequestData censusData = CensusAPIUtilities.deserializeData(dataJson);
       // Adds results to the responseMap
       responseMap.put("result", "success");
       responseMap.put("activity", censusData);
@@ -114,7 +114,9 @@ public class CensusAPIHandler implements Route {
     // on participant number?
     HttpRequest ACSApiRequest =
         HttpRequest.newBuilder()
-            .uri(new URI("https://api.census.gov/data/" + year + "/acs/acs1/subject/variables?get=NAME,S2802_C03_022E&for=county:*&in=state:" + state))
+            .uri(new URI("https://api.census.gov/data/" + year +
+                "/acs/acs1/subject/variables?get=NAME,S2802_C03_022E&for=county:" + county +
+                "&in=state:" + state))
             .GET()
             .build();
 
@@ -139,7 +141,7 @@ public class CensusAPIHandler implements Route {
     // on participant number?
     HttpRequest ACSApiRequest =
         HttpRequest.newBuilder()
-            .uri(new URI("https://api.census.gov/data/" +year+"/dec/sf1?get=NAME&for=county:*&in=state:" + ))
+            .uri(new URI("https://api.census.gov/data/" +year+"/dec/sf1?get=NAME&for=county:*&in=state:" + this.stateMap.get(state)))
             .GET()
             .build();
 
