@@ -1,7 +1,5 @@
 package Server;
 
-import RIData.CensusAPIUtilities;
-import RIData.CensusData;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
