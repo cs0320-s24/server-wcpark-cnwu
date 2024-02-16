@@ -1,6 +1,5 @@
 package edu.brown.cs.student.UserFacing;
 
-import edu.brown.cs.student.CreatorFromRowTypes.CSVStar;
 import edu.brown.cs.student.CreatorFromRowTypes.CSVString;
 import edu.brown.cs.student.CreatorFromRowTypes.CreatorFromRow;
 import edu.brown.cs.student.Parser.CSVParser;
@@ -9,7 +8,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.List;
 import java.util.Scanner;
-import javax.crypto.SecretKey;
 
 /**
  * The edu.brown.cs.student.UserFacing.Main class of our project. This is where execution begins.

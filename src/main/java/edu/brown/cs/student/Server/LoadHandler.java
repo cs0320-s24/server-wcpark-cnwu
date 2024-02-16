@@ -25,16 +25,12 @@ public class LoadHandler implements Route {
     String headers = request.queryParams("headers");
     String directory = request.queryParams("directory");
     File pDirectory = new File(directory);
-    boolean boolHeader = true;
-    boolean checked = false;
-    if (headers.equals("true")) {
-      checked = true;
+    boolean boolHeader = false;
+    boolean check = Boolean.parseBoolean(headers);
+    if (check) {
+      boolHeader = true;
     }
-    else if (headers.equals("false")) {
-      boolHeader = false;
-      checked = true;
-    }
-    if(!checked) {
+    if(headers == null) {
       throw new IllegalArgumentException("Did not input valid value for headers (ex. True/False)");
     }
 

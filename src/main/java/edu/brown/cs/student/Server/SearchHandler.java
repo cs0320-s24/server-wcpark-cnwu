@@ -19,9 +19,6 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-/**
- * Handler class for SearchHandler
- */
 public class SearchHandler implements Route {
   private final Server server;
   public SearchHandler(Server server) {
@@ -48,7 +45,6 @@ public class SearchHandler implements Route {
           CSVSearcher<String, String, CSVString> searcher =
               new CSVSearcher<String, String, CSVString>(parser);
           List<Integer> rows = searcher.search(query, colID, parser.getHeaders());
-          System.out.println(rows);
           if(rows.isEmpty()) {
             responseMap.put("result", "error_bad_request");
             responseMap.put("message", "no data in specified column/index");
@@ -63,7 +59,6 @@ public class SearchHandler implements Route {
           }
 
         } catch (FileNotFoundException e) {
-          this.server.loadFile(null, false);
           responseMap.put("result", "error_datasource");
           responseMap.put("message", "file not found");
         }

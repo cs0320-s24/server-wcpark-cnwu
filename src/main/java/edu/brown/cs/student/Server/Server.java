@@ -2,7 +2,6 @@ package edu.brown.cs.student.Server;
 
 import static spark.Spark.after;
 
-import org.checkerframework.checker.units.qual.C;
 import spark.Spark;
 public class Server {
   static final int port = 3232;
@@ -18,8 +17,6 @@ public class Server {
           response.header("Access-Control-Allow-Origin", "*");
           response.header("Access-Control-Allow-Methods", "*");
         });
-
-    ICensusDataSource originalCensusHandler = new CensusAPIHandler();
 
     // Wrap it with the caching layer
 

@@ -37,11 +37,6 @@ public class ParserTest {
     assertEquals(searcher.search("395773.6521", "3", parser.getHeaders()), List.of(2));
     assertEquals(searcher.search("6%", "Employed Percent", parser.getHeaders()), List.of(3));
     assertEquals(searcher.search("RI", null, parser.getHeaders()), List.of(2, 3, 4, 5, 6, 7));
-
-    for(CreatorFromRow<CSVString> s : parser){
-      System.out.println(s);
-    }
-
   }
   /**
    * Tests if the parser can handle malformed data

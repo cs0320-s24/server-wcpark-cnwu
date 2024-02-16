@@ -38,7 +38,6 @@ public class ViewHandler implements Route {
         responseMap.put("result", "success");
         responseMap.put("data", parsed);
       } catch (FileNotFoundException e) {
-        this.server.loadFile(null, false);
         responseMap.put("result", "error_datasource");
         responseMap.put("message", "filepath not found");
       }
