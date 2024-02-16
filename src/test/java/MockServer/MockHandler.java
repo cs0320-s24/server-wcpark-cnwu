@@ -1,4 +1,4 @@
-package edu.brown.cs.student.Server;
+package MockServer;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Types;
@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.time.*;
 //Credit to reng1 - took inspiration for moshi builder and json deserialization.
-public class CensusAPIHandler implements Route {
+public class MockHandler implements Route {
   private String county;
   private String state;
   private String stateCode;
@@ -49,39 +49,80 @@ public class CensusAPIHandler implements Route {
     return adapter.toJson(this.responseMap);
   }
   private void getStateThenCounty() throws URISyntaxException, IOException, InterruptedException {
-    HttpRequest buildApiRequest = HttpRequest.newBuilder()
-        .uri(new URI("https://api.census.gov/data/2010/dec/sf1?get=NAME&for=state:*"))
-        .GET()
-        .build();
-    HttpResponse<String> sentApiResponse = HttpClient.newBuilder()
-        .build().
-        send(buildApiRequest, HttpResponse.BodyHandlers.ofString());
+    String states = "[[\"NAME\",\"state\"],\n"
+        + "  [\"Alabama\",\"01\"],\n"
+        + "  [\"Alaska\",\"02\"],\n"
+        + "  [\"Arizona\",\"04\"],\n"
+        + "  [\"Arkansas\",\"05\"],\n"
+        + "  [\"California\",\"06\"],\n"
+        + "  [\"Louisiana\",\"22\"],\n"
+        + "  [\"Kentucky\",\"21\"],\n"
+        + "  [\"Colorado\",\"08\"],\n"
+        + "  [\"Connecticut\",\"09\"],\n"
+        + "  [\"Delaware\",\"10\"],\n"
+        + "  [\"District of Columbia\",\"11\"],\n"
+        + "  [\"Florida\",\"12\"],\n"
+        + "  [\"Georgia\",\"13\"],\n"
+        + "  [\"Hawaii\",\"15\"],\n"
+        + "  [\"Idaho\",\"16\"],\n"
+        + "  [\"Illinois\",\"17\"],\n"
+        + "  [\"Indiana\",\"18\"],\n"
+        + "  [\"Iowa\",\"19\"],\n"
+        + "  [\"Kansas\",\"20\"],\n"
+        + "  [\"Maine\",\"23\"],\n"
+        + "  [\"Maryland\",\"24\"],\n"
+        + "  [\"Massachusetts\",\"25\"],\n"
+        + "  [\"Michigan\",\"26\"],\n"
+        + "  [\"Minnesota\",\"27\"],\n"
+        + "  [\"Mississippi\",\"28\"],\n"
+        + "  [\"Missouri\",\"29\"],\n"
+        + "  [\"Montana\",\"30\"],\n"
+        + "  [\"Nebraska\",\"31\"],\n"
+        + "  [\"Nevada\",\"32\"],\n"
+        + "  [\"New Hampshire\",\"33\"],\n"
+        + "  [\"New Jersey\",\"34\"],\n"
+        + "  [\"New Mexico\",\"35\"],\n"
+        + "  [\"New York\",\"36\"],\n"
+        + "  [\"North Carolina\",\"37\"],\n"
+        + "  [\"North Dakota\",\"38\"],\n"
+        + "  [\"Ohio\",\"39\"],\n"
+        + "  [\"Oklahoma\",\"40\"],\n"
+        + "  [\"Oregon\",\"41\"],\n"
+        + "  [\"Pennsylvania\",\"42\"],\n"
+        + "  [\"Rhode Island\",\"44\"],\n"
+        + "  [\"South Carolina\",\"45\"],\n"
+        + "  [\"South Dakota\",\"46\"],\n"
+        + "  [\"Tennessee\",\"47\"],\n"
+        + "  [\"Texas\",\"48\"],\n"
+        + "  [\"Utah\",\"49\"],\n"
+        + "  [\"Vermont\",\"50\"],\n"
+        + "  [\"Virginia\",\"51\"],\n"
+        + "  [\"Washington\",\"53\"],\n"
+        + "  [\"West Virginia\",\"54\"],\n"
+        + "  [\"Wisconsin\",\"55\"],\n"
+        + "  [\"Wyoming\",\"56\"],\n"
+        + "  [\"Puerto Rico\",\"72\"]]";
 
     Moshi moshi = new Moshi.Builder().build();
     Type ls = Types.newParameterizedType(List.class, String.class);
     Type lls = Types.newParameterizedType(List.class, ls);
     JsonAdapter<List<List<String>>> adapter = moshi.adapter(lls);
 
-    List<List<String>> res = adapter.fromJson(sentApiResponse.body());
+    List<List<String>> res = adapter.fromJson(states);
 
     for (List<String> cur : res) {
       if (cur.get(0).equals(this.state)) {
         this.stateCode = cur.get(1);
       }
     }
+    String counties = "[[\"NAME\",\"S2802_C03_022E\",\"state\",\"county\"],\n"
+        + "  [\"Kent County, Rhode Island\",\"84.1\",\"44\",\"003\"],\n"
+        + "  [\"Providence County, Rhode Island\",\"85.4\",\"44\",\"007\"],\n"
+        + "  [\"Newport County, Rhode Island\",\"90.1\",\"44\",\"005\"],\n"
+        + "  [\"Washington County, Rhode Island\",\"92.8\",\"44\",\"009\"]]";
     if (this.stateCode != null) {
-      buildApiRequest = HttpRequest.newBuilder()
-          .uri(new URI(
-              "https://api.census.gov/data/2019/acs/acs1/subject/variables?get=NAME,S2802_C03_022E&for=county:*&in=state:"
-                  + this.stateCode))
-          .GET()
-          .build();
-      sentApiResponse = HttpClient.newBuilder()
-          .build().
-          send(buildApiRequest, HttpResponse.BodyHandlers.ofString());
-
       LocalDateTime time = LocalDateTime.now();
-      res = adapter.fromJson(sentApiResponse.body());
+      res = adapter.fromJson(counties);
 
       for (List<String> cur : res) {
         if (cur.get(0).equals(this.county + " County, " + this.state)) {
@@ -90,8 +131,9 @@ public class CensusAPIHandler implements Route {
       }
       if (this.broadbandPercent != null) {
         this.responseMap.put("result", "success");
-        this.responseMap.put("time", time.toString());
         this.responseMap.put("Percentage of broadband access in " + this.county, this.broadbandPercent);
+        this.responseMap.put("time", time.toString());
+
       } else {
         this.responseMap.put("result", "error_bad_request");
         this.responseMap.put("message", "county not found");

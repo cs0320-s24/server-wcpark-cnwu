@@ -39,11 +39,11 @@ public class ViewHandler implements Route {
         responseMap.put("data", parsed);
       } catch (FileNotFoundException e) {
         this.server.loadFile(null, false);
-        responseMap.put("result", "fail_bad_path");
+        responseMap.put("result", "error_datasource");
         responseMap.put("message", "filepath not found");
       }
     } else {
-      responseMap.put("result", "fail_not_loaded");
+      responseMap.put("result", "error_datasource");
       responseMap.put("message", "file not loaded");
     }
     return adapter.toJson(responseMap);
