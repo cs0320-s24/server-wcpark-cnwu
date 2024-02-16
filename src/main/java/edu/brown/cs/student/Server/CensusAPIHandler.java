@@ -28,11 +28,17 @@ public class CensusAPIHandler implements Route, ICensusDataSource {
   private String broadbandPercent;
   private Map<String, Object> responseMap;
 
+  private final CachingCensusAPIHandler cachingHandler;
+
+  public CensusAPIHandler() {
+    // Initialize the caching handler with appropriate parameters
+    this.cachingHandler = new CachingCensusAPIHandler(this, 50, 1);
+  }
   @Override
   public Object handle(Request request, Response response) throws Exception {
     String state = request.queryParams("state");
     String county = request.queryParams("county");
-    return fetchData(state, county);
+    return cachingHandler.fetchData(state, county);
   }
   @Override
   public Object fetchData(String state, String county) throws Exception {
@@ -99,6 +105,7 @@ public class CensusAPIHandler implements Route, ICensusDataSource {
         this.responseMap.put("result", "success");
         this.responseMap.put("time", time.toString());
         this.responseMap.put("Percentage of broadband access in " + this.county, this.broadbandPercent);
+
       } else {
         this.responseMap.put("result", "error_bad_request");
         this.responseMap.put("message", "county not found");
