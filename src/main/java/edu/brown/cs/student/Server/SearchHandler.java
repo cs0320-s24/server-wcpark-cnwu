@@ -19,11 +19,34 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.Map;
 
+/**
+ * Handles search requests on the currently loaded CSV file.
+ * This handler allows clients to specify a search query and an optional column identifier
+ * to filter search results. The response includes the row numbers where the query matches.
+ */
+
 public class SearchHandler implements Route {
   private final Server server;
+
+  /**
+   * Constructs a SearchHandler with a reference to the server instance.
+   * This reference is used to access server-wide properties like the currently loaded CSV file.
+   *
+   * @param server The server instance to which this handler belongs.
+   */
   public SearchHandler(Server server) {
     this.server = server;
   }
+
+  /**
+   * Processes incoming search requests, executing the search on the currently loaded CSV file.
+   * The search can be performed across all columns or within a specified column based on the query parameters.
+   *
+   * @param request  The Spark request object, containing query parameters for the search.
+   * @param response The Spark response object, used to modify the HTTP response.
+   * @return A JSON string representing the search results or an error message.
+   * @throws Exception if there's an issue processing the request.
+   */
   @Override
   public Object handle(Request request, Response response) throws Exception {
 
