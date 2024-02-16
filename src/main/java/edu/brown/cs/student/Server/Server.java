@@ -2,12 +2,15 @@ package edu.brown.cs.student.Server;
 
 import static spark.Spark.after;
 
+import org.checkerframework.checker.units.qual.C;
 import spark.Spark;
 public class Server {
   static final int port = 3232;
   private String filepath;
   private boolean headers;
-  public Server(){
+  private final ICensusDataSource source;
+  public Server(ICensusDataSource source){
+    this.source = source;
     this.filepath = null;
     Spark.port(port);
     after(
@@ -19,10 +22,9 @@ public class Server {
     ICensusDataSource originalCensusHandler = new CensusAPIHandler();
 
     // Wrap it with the caching layer
-    ICensusDataSource cachingCensusHandler = new CachingCensusAPIHandler(originalCensusHandler, 100, 30); // Adjust cache size and expiry as needed
 
     // Use the caching handler for the "broadband" route
-    Spark.get("broadband", (req, res) -> cachingCensusHandler.fetchData(req.queryParams("state"), req.queryParams("county")));
+    Spark.get("broadband", new CensusAPIHandler());
     Spark.get("loadcsv", new LoadHandler(this));
     Spark.get("viewcsv", new ViewHandler(this));
     Spark.get("searchcsv", new SearchHandler(this));
@@ -43,6 +45,6 @@ public class Server {
     return this.headers;
   }
   public static void main(String[] args){
-    Server server = new Server();
+    Server server = new Server(new CensusAPIHandler());
   }
 }
