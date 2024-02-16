@@ -1,4 +1,4 @@
-package Server;
+package edu.brown.cs.student.Server;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Types;
@@ -20,13 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.time.*;
-
-/**
- * This class is used to illustrate how to build and send a GET request then prints the response.
- *
- * Check out the rest of the gearup for an exercise on how to parse the response and deserialize
- * it into an object.
- */
 public class CensusAPIHandler implements Route {
   private String county;
   private String state;
@@ -48,6 +41,10 @@ public class CensusAPIHandler implements Route {
     if (this.county != null && this.state != null) {
       this.getStateThenCounty();
     }
+    else {
+      this.responseMap.put("result", "error_missing_field");
+      this.responseMap.put("message", "parameters not found");
+    }
     return adapter.toJson(this.responseMap);
   }
   private void getStateThenCounty() throws URISyntaxException, IOException, InterruptedException {
@@ -55,8 +52,6 @@ public class CensusAPIHandler implements Route {
         .uri(new URI("https://api.census.gov/data/2010/dec/sf1?get=NAME&for=state:*"))
         .GET()
         .build();
-
-    // Send that API request then store the response in this variable. Note the generic type.
     HttpResponse<String> sentApiResponse = HttpClient.newBuilder()
         .build().
         send(buildApiRequest, HttpResponse.BodyHandlers.ofString());
@@ -69,7 +64,7 @@ public class CensusAPIHandler implements Route {
     List<List<String>> res = adapter.fromJson(sentApiResponse.body());
 
     for (List<String> cur : res) {
-      if (cur.get(1).equals(this.state)) {
+      if (cur.get(0).equals(this.state)) {
         this.stateCode = cur.get(1);
       }
     }
@@ -80,8 +75,6 @@ public class CensusAPIHandler implements Route {
                   + this.stateCode))
           .GET()
           .build();
-
-      // Send that API request then store the response in this variable. Note the generic type.
       sentApiResponse = HttpClient.newBuilder()
           .build().
           send(buildApiRequest, HttpResponse.BodyHandlers.ofString());
@@ -94,7 +87,21 @@ public class CensusAPIHandler implements Route {
           this.broadbandPercent = cur.get(1);
         }
       }
+      if (this.broadbandPercent != null) {
+        this.responseMap.put("result", "success");
+        this.responseMap.put("time", time.toString());
+        this.responseMap.put("Percentage of broadband access in " + this.county, this.broadbandPercent);
+      } else {
+        this.responseMap.put("result", "error_no_data");
+        this.responseMap.put("message", "county not found");
+      }
     }
+    else {
+      this.responseMap.put("result", "error_no_data");
+      this.responseMap.put("message", "state not found");
+    }
+    this.responseMap.put("state", this.state);
+    this.responseMap.put("county", this.county);
   }
 }
 

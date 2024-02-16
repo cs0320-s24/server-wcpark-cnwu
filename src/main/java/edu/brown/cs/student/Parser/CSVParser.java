@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @param <T>
  */
-public class CSVParser<T> implements Iterable<T> {
+public class CSVParser<T> {
   static final Pattern regexSplitCSVRow =
       Pattern.compile(",(?=([^\\\"]*\\\"[^\\\"]*\\\")*(?![^\\\"]*\\\"))");
   private List<String> headers = new ArrayList<>();
@@ -48,7 +48,7 @@ public class CSVParser<T> implements Iterable<T> {
    * @param reader
    * @throws FactoryFailureException
    */
-  private void parse(Reader reader) throws FactoryFailureException {
+  public void parse(Reader reader) throws FactoryFailureException {
     int row = 1;
     List<T> res = new ArrayList<>();
     String line;
@@ -159,42 +159,5 @@ public class CSVParser<T> implements Iterable<T> {
         .replaceAll("\"$", "")
         // Replace double-double-quotes with double-quotes
         .replaceAll("\"\"", "\"");
-  }
-
-  @NotNull
-  @Override
-  public Iterator<T> iterator() {
-    return new CSVIterator();
-  }
-  private class CSVIterator implements Iterator<T> {
-    // Implement iterator methods...
-    int size = parsed.size();
-    int index = 0;
-    @Override
-    public boolean hasNext() {
-      // Implement hasNext method
-      if(index >= size){
-        return true;
-      }
-      else {
-        return false;
-      }
-    }
-
-    @Override
-    public T next() {
-      // Implement next method
-      int temp = index;
-      index++;
-      if (hasNext()) {
-        return parsed.get(temp);
-      }
-      return null;
-    }
-
-    @Override
-    public void remove() {
-      // Implement remove method (if supported)
-    }
   }
 }
