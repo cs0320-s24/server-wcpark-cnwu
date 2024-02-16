@@ -4,7 +4,6 @@ import static spark.Spark.after;
 
 import spark.Spark;
 public class Server {
-
   /**
    * 1. Start your query with the host name:
    * https://api.census.gov/data
@@ -24,17 +23,20 @@ public class Server {
    *
    * 5. Add your variables:
    * https://api.census.gov/data/2019/pep/charagegroups?get=NAME,POP
-   * @param args
+   * @param toUse
    */
-  public static void main(String[] args){
-    int port = 3232;
+  static final int port = 3232;
+  public Server(){
     Spark.port(port);
-
     after(
         (request, response) -> {
           response.header("Access-Control-Allow-Origin", "*");
           response.header("Access-Control-Allow-Methods", "*");
         });
-
+    Spark.get("broadband", new CensusAPIHandler());
+    System.out.println("Server started at http://localhost:" + port);
+  }
+  public static void main(String[] args){
+    Server server = new Server();
   }
 }

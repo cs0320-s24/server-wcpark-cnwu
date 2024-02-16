@@ -1,10 +1,10 @@
 package Server;
 
-import RIData.CRDUtilities;
-import RIData.CountyRequestData;
-import RIData.SRDUtilities;
-import RIData.StateRequestData;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Types;
+import com.squareup.moshi.Moshi;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -16,150 +16,85 @@ import java.util.Set;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.time.*;
 
+/**
+ * This class is used to illustrate how to build and send a GET request then prints the response.
+ *
+ * Check out the rest of the gearup for an exercise on how to parse the response and deserialize
+ * it into an object.
+ */
 public class CensusAPIHandler implements Route {
-  private Map<String, String> stateMap;
-  public CensusAPIHandler(){
-    this.stateMap = new HashMap<>();
-    stateMap.put("Alabama", "01");
-    stateMap.put("Alaska", "02");
-    stateMap.put("Arizona", "04");
-    stateMap.put("Arkansas", "05");
-    stateMap.put("California", "06");
-    stateMap.put("Louisiana", "22");
-    stateMap.put("Kentucky", "21");
-    stateMap.put("Colorado", "08");
-    stateMap.put("Connecticut", "09");
-    stateMap.put("Delaware", "10");
-    stateMap.put("District of Columbia", "11");
-    stateMap.put("Florida", "12");
-    stateMap.put("Georgia", "13");
-    stateMap.put("Hawaii", "15");
-    stateMap.put("Idaho", "16");
-    stateMap.put("Illinois", "17");
-    stateMap.put("Indiana", "18");
-    stateMap.put("Iowa", "19");
-    stateMap.put("Kansas", "20");
-    stateMap.put("Maine", "23");
-    stateMap.put("Maryland", "24");
-    stateMap.put("Massachusetts", "25");
-    stateMap.put("Michigan", "26");
-    stateMap.put("Minnesota", "27");
-    stateMap.put("Mississippi", "28");
-    stateMap.put("Missouri", "29");
-    stateMap.put("Montana", "30");
-    stateMap.put("Nebraska", "31");
-    stateMap.put("Nevada", "32");
-    stateMap.put("New Hampshire", "33");
-    stateMap.put("New Jersey", "34");
-    stateMap.put("New Mexico", "35");
-    stateMap.put("New York", "36");
-    stateMap.put("North Carolina", "37");
-    stateMap.put("North Dakota", "38");
-    stateMap.put("Ohio", "39");
-    stateMap.put("Oklahoma", "40");
-    stateMap.put("Oregon", "41");
-    stateMap.put("Pennsylvania", "42");
-    stateMap.put("Rhode Island", "44");
-    stateMap.put("South Carolina", "45");
-    stateMap.put("South Dakota", "46");
-    stateMap.put("Tennessee", "47");
-    stateMap.put("Texas", "48");
-    stateMap.put("Utah", "49");
-    stateMap.put("Vermont", "50");
-    stateMap.put("Virginia", "51");
-    stateMap.put("Washington", "53");
-    stateMap.put("West Virginia", "54");
-    stateMap.put("Wisconsin", "55");
-    stateMap.put("Wyoming", "56");
-    stateMap.put("Puerto Rico", "72");
-  }
+  private String county;
+  private String state;
+  private String stateCode;
+  private String broadbandPercent;
+  private Map<String, Object> responseMap;
   @Override
-  public Object handle(Request request, Response response) {
-    // If you are interested in how parameters are received, try commenting out and
-    // printing these lines! Notice that requesting a specific parameter requires that parameter
-    // to be fulfilled.
-    // If you specify a queryParam, you can access it by appending ?parameterName=name to the
-    // endpoint
-    // ex. http://localhost:3232/activity?participants=num
-    Set<String> params = request.queryParams();
-    //     System.out.println(params);
-    String year = request.queryParams("year");
-    String county = request.queryParams("county");
-    String state = request.queryParams("state");
+  public Object handle(Request request, Response response) throws Exception {
+    this.county = request.queryParams("county");
+    this.state = request.queryParams("state");
+    this.stateCode = null;
+    this.broadbandPercent = null;
+    this.responseMap = new HashMap<>();
 
-    //     System.out.println(participants);
+    Moshi moshi = new Moshi.Builder().build();
+    Type mapStringObject = Types.newParameterizedType(Map.class, String.class, Object.class);
+    JsonAdapter<Map<String, Object>> adapter = moshi.adapter(mapStringObject);
 
-    // Creates a hashmap to store the results of the request
-    Map<String, Object> responseMap = new HashMap<>();
-
-    try {
-      // Sends a request to the API and receives JSON back
-      String stateJson = this.sendStateRequest(year, state);
-      // Deserializes JSON into an Activity
-      StateRequestData stateData = SRDUtilities.deserializeData(stateJson);
-      String countyJson = this.sendCountyRequest(year, stateData.getCounty(), state);
-      CountyRequestData countyData = CRDUtilities.deserializeData(countyJson);
-      return responseMap;
-    } catch (Exception e) {
-      e.printStackTrace();
-      // This is a relatively unhelpful exception message. An important part of this sprint will be
-      // in learning to debug correctly by creating your own informative error messages where Spark
-      // falls short.
-      responseMap.put("result", "Exception");
+    if (this.county != null && this.state != null) {
+      this.getStateThenCounty();
     }
-    return responseMap;
+    return adapter.toJson(this.responseMap);
   }
-
-  private String sendCountyRequest(String year, String county, String state)
-      throws URISyntaxException, IOException, InterruptedException {
-    // Build a request to this BoredAPI. Try out this link in your browser, what do you see?
-    // TODO 1: Looking at the documentation, how can we add to the URI to query based
-    // on participant number?
-    HttpRequest ACSApiRequest =
-        HttpRequest.newBuilder()
-            .uri(new URI("https://api.census.gov/data/" + year +
-                "/acs/acs1/subject/variables?get=NAME,S2802_C03_022E&for=county:" + county +
-                "&in=state:" + state))
-            .GET()
-            .build();
+  private void getStateThenCounty() throws URISyntaxException, IOException, InterruptedException {
+    HttpRequest buildApiRequest = HttpRequest.newBuilder()
+        .uri(new URI("https://api.census.gov/data/2010/dec/sf1?get=NAME&for=state:*"))
+        .GET()
+        .build();
 
     // Send that API request then store the response in this variable. Note the generic type.
-    HttpResponse<String> sentACIApiResponse =
-        HttpClient.newBuilder()
-            .build()
-            .send(ACSApiRequest, HttpResponse.BodyHandlers.ofString());
+    HttpResponse<String> sentApiResponse = HttpClient.newBuilder()
+        .build().
+        send(buildApiRequest, HttpResponse.BodyHandlers.ofString());
 
-    // What's the difference between these two lines? Why do we return the body? What is useful from
-    // the raw response (hint: how can we use the status of response)?
-    System.out.println(sentACIApiResponse);
-    System.out.println(sentACIApiResponse.body());
+    Moshi moshi = new Moshi.Builder().build();
+    Type ls = Types.newParameterizedType(List.class, String.class);
+    Type lls = Types.newParameterizedType(List.class, ls);
+    JsonAdapter<List<List<String>>> adapter = moshi.adapter(lls);
 
-    return sentACIApiResponse.body();
-  }
+    List<List<String>> res = adapter.fromJson(sentApiResponse.body());
 
-  private String sendStateRequest(String year, String state)
-      throws URISyntaxException, IOException, InterruptedException {
-    // Build a request to this BoredAPI. Try out this link in your browser, what do you see?
-    // TODO 1: Looking at the documentation, how can we add to the URI to query based
-    // on participant number?
-    HttpRequest ACSApiRequest =
-        HttpRequest.newBuilder()
-            .uri(new URI("https://api.census.gov/data/" +year+"/dec/sf1?get=NAME&for=county:*&in=state:" + this.stateMap.get(state)))
-            .GET()
-            .build();
+    for (List<String> cur : res) {
+      if (cur.get(1).equals(this.state)) {
+        this.stateCode = cur.get(1);
+      }
+    }
+    if (this.stateCode != null) {
+      buildApiRequest = HttpRequest.newBuilder()
+          .uri(new URI(
+              "https://api.census.gov/data/2019/acs/acs1/subject/variables?get=NAME,S2802_C03_022E&for=county:*&in=state:"
+                  + this.stateCode))
+          .GET()
+          .build();
 
-    // Send that API request then store the response in this variable. Note the generic type.
-    HttpResponse<String> sentACIApiResponse =
-        HttpClient.newBuilder()
-            .build()
-            .send(ACSApiRequest, HttpResponse.BodyHandlers.ofString());
+      // Send that API request then store the response in this variable. Note the generic type.
+      sentApiResponse = HttpClient.newBuilder()
+          .build().
+          send(buildApiRequest, HttpResponse.BodyHandlers.ofString());
 
-    // What's the difference between these two lines? Why do we return the body? What is useful from
-    // the raw response (hint: how can we use the status of response)?
-    System.out.println(sentACIApiResponse);
-    System.out.println(sentACIApiResponse.body());
+      LocalDateTime time = LocalDateTime.now();
+      res = adapter.fromJson(sentApiResponse.body());
 
-    return sentACIApiResponse.body();
+      for (List<String> cur : res) {
+        if (cur.get(0).equals(this.county + " County, " + this.state)) {
+          this.broadbandPercent = cur.get(1);
+        }
+      }
+    }
   }
 }
+
