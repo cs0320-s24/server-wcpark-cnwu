@@ -15,7 +15,14 @@ public class Server {
           response.header("Access-Control-Allow-Origin", "*");
           response.header("Access-Control-Allow-Methods", "*");
         });
-    Spark.get("broadband", new CensusAPIHandler());
+
+    ICensusDataSource originalCensusHandler = new CensusAPIHandler();
+
+    // Wrap it with the caching layer
+    ICensusDataSource cachingCensusHandler = new CachingCensusAPIHandler(originalCensusHandler, 100, 30); // Adjust cache size and expiry as needed
+
+    // Use the caching handler for the "broadband" route
+    Spark.get("broadband", (req, res) -> cachingCensusHandler.fetchData(req.queryParams("state"), req.queryParams("county")));
     Spark.get("loadcsv", new LoadHandler(this));
     Spark.get("viewcsv", new ViewHandler(this));
     Spark.get("searchcsv", new SearchHandler(this));

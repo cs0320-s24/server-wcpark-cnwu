@@ -29,12 +29,14 @@ public class CensusAPIHandler implements Route, ICensusDataSource {
 
   @Override
   public Object handle(Request request, Response response) throws Exception {
-    return fetchData(request, response);
+    String state = request.queryParams("state");
+    String county = request.queryParams("county");
+    return fetchData(state, county);
   }
   @Override
-  public Object fetchData(Request request, Response response) throws Exception {
-    this.county = request.queryParams("county");
-    this.state = request.queryParams("state");
+  public Object fetchData(String state, String county) throws Exception {
+    this.state = state;
+    this.county = county;
     this.stateCode = null;
     this.broadbandPercent = null;
     this.responseMap = new HashMap<>();
