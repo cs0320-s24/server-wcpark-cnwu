@@ -20,14 +20,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.time.*;
-public class CensusAPIHandler implements Route {
+public class CensusAPIHandler implements Route, ICensusDataSource {
   private String county;
   private String state;
   private String stateCode;
   private String broadbandPercent;
   private Map<String, Object> responseMap;
+
   @Override
   public Object handle(Request request, Response response) throws Exception {
+    return fetchData(request, response);
+  }
+  @Override
+  public Object fetchData(Request request, Response response) throws Exception {
     this.county = request.queryParams("county");
     this.state = request.queryParams("state");
     this.stateCode = null;
