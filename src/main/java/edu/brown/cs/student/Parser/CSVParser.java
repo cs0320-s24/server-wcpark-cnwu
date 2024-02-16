@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 public class CSVParser<T> {
   static final Pattern regexSplitCSVRow =
       Pattern.compile(",(?=([^\\\"]*\\\"[^\\\"]*\\\")*(?![^\\\"]*\\\"))");
-  private List<String> headers = new ArrayList<>();
+  private List<String> headers = null;
   private List<String> errors = new ArrayList<>();
   private boolean header;
   private CreatorFromRow<T> type;

@@ -27,7 +27,6 @@ public class CensusAPIHandler implements Route, ICensusDataSource {
   private String stateCode;
   private String broadbandPercent;
   private Map<String, Object> responseMap;
-
   private final CachingCensusAPIHandler cachingHandler;
 
   public CensusAPIHandler() {

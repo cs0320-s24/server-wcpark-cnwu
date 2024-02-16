@@ -8,7 +8,6 @@ import edu.brown.cs.student.CreatorFromRowTypes.CreatorFromRow;
 import edu.brown.cs.student.Parser.CSVParser;
 import edu.brown.cs.student.UserFacing.CSVSearcher;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import spark.Request;
@@ -32,7 +31,7 @@ public class SearchHandler implements Route {
   public Object handle(Request request, Response response) throws Exception {
 
     String query = request.queryParams("query");
-    String colID = request.queryParams("colId");
+    String colID = request.queryParams("colID");
 
     Moshi moshi = new Moshi.Builder().build();
     Type mapStringObject = Types.newParameterizedType(Map.class, String.class, Object.class);
@@ -49,7 +48,8 @@ public class SearchHandler implements Route {
           CSVSearcher<String, String, CSVString> searcher =
               new CSVSearcher<String, String, CSVString>(parser);
           List<Integer> rows = searcher.search(query, colID, parser.getHeaders());
-          if(!rows.isEmpty()) {
+          System.out.println(rows);
+          if(rows.isEmpty()) {
             responseMap.put("result", "error_bad_request");
             responseMap.put("message", "no data in specified column/index");
           }
