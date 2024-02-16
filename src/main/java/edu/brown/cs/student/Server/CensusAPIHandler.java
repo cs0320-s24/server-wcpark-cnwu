@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.time.*;
+
 public class CensusAPIHandler implements Route, ICensusDataSource {
   private String county;
   private String state;
@@ -49,7 +50,7 @@ public class CensusAPIHandler implements Route, ICensusDataSource {
       this.getStateThenCounty();
     }
     else {
-      this.responseMap.put("result", "error_missing_field");
+      this.responseMap.put("result", "error_bad_request");
       this.responseMap.put("message", "parameters not found");
     }
     return adapter.toJson(this.responseMap);
@@ -99,12 +100,12 @@ public class CensusAPIHandler implements Route, ICensusDataSource {
         this.responseMap.put("time", time.toString());
         this.responseMap.put("Percentage of broadband access in " + this.county, this.broadbandPercent);
       } else {
-        this.responseMap.put("result", "error_no_data");
+        this.responseMap.put("result", "error_bad_request");
         this.responseMap.put("message", "county not found");
       }
     }
     else {
-      this.responseMap.put("result", "error_no_data");
+      this.responseMap.put("result", "error_bad_request");
       this.responseMap.put("message", "state not found");
     }
     this.responseMap.put("state", this.state);

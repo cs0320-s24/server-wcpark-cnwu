@@ -51,7 +51,7 @@ public class SearchHandler implements Route {
           List<Integer> rows = searcher.search(query, colID, parser.getHeaders());
           if(!rows.isEmpty()) {
             responseMap.put("result", "error_bad_request");
-            responseMap.put("message", "no such column name or index");
+            responseMap.put("message", "no data in specified column/index");
           }
           else {
             responseMap.put("result", "success");
@@ -74,7 +74,7 @@ public class SearchHandler implements Route {
 
     } else {
       responseMap.put("result", "error_bad_request");
-      responseMap.put("message", "missing query and/or headers parameters");
+      responseMap.put("message", "missing query");
     }
     return adapter.toJson(responseMap);
   }

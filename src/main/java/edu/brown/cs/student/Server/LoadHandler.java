@@ -39,10 +39,10 @@ public class LoadHandler implements Route {
     Type mapStringObject = Types.newParameterizedType(Map.class, String.class, Object.class);
     JsonAdapter<Map<String, Object>> adapter = moshi.adapter(mapStringObject);
     Map<String, Object> responseMap = new HashMap<>();
-
+    //Credit to reng1 for protected directory idea
     if (fileName != null && fileName.startsWith("./data/")) {
       try {
-        Reader file = new FileReader(fileName); // to test if fileName is valid
+        Reader file = new FileReader(fileName);
         this.server.loadFile(fileName, boolHeader);
         responseMap.put("result", "success");
         responseMap.put("filepath", fileName);
