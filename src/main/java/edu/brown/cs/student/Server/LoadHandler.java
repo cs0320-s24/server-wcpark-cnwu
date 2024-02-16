@@ -3,6 +3,7 @@ package edu.brown.cs.student.Server;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
@@ -20,8 +21,10 @@ public class LoadHandler implements Route {
   }
   @Override
   public Object handle(Request request, Response response) {
-    String fileName = request.queryParams("filepath");
+    String file = request.queryParams("file");
     String headers = request.queryParams("headers");
+    String directory = request.queryParams("directory");
+    File pDirectory = new File(directory);
     boolean boolHeader = true;
     boolean checked = false;
     if (headers.equals("true")) {
@@ -39,13 +42,13 @@ public class LoadHandler implements Route {
     Type mapStringObject = Types.newParameterizedType(Map.class, String.class, Object.class);
     JsonAdapter<Map<String, Object>> adapter = moshi.adapter(mapStringObject);
     Map<String, Object> responseMap = new HashMap<>();
-    //Credit to reng1 for protected directory idea
-    if (fileName != null) {
+    String absolute = extractFilenames(pDirectory, file);
+    if (file != null &&  absolute != null) {
       try {
-        Reader file = new FileReader(fileName);
-        this.server.loadFile(fileName, boolHeader);
+        Reader fileReader = new FileReader(absolute);
+        this.server.loadFile(absolute, boolHeader);
         responseMap.put("result", "success");
-        responseMap.put("filepath", fileName);
+        responseMap.put("filepath", file);
 
       } catch (FileNotFoundException e) {
         this.server.loadFile(null, false);
@@ -54,9 +57,25 @@ public class LoadHandler implements Route {
       }
     } else {
       responseMap.put("result", "error_bad_request");
-      responseMap.put("message", "filepath not given or file not from ./data folder");
+      responseMap.put("message", "file not found within protected directory");
     }
     return adapter.toJson(responseMap);
+  }
+  private String extractFilenames(File directory, String target) {
+    File[] files = directory.listFiles();
+    if (files != null) {
+      for (File file : files) {
+        if (file.isDirectory()) {
+          String result = extractFilenames(file, target);
+          if (result != null) {
+            return result;
+          }
+        } else if (file.getName().equalsIgnoreCase(target)) {
+          return file.getAbsolutePath();
+        }
+      }
+    }
+    return null;
   }
 }
 
