@@ -4,7 +4,6 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Types;
 import com.squareup.moshi.Moshi;
 import edu.brown.cs.student.Server.ICensusDataSource;
-import edu.brown.cs.student.Server.MockCaching;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;

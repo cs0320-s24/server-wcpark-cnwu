@@ -1,12 +1,8 @@
-package MockServer;
+package edu.brown.cs.student.Server;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
-import edu.brown.cs.student.Server.CensusAPIHandler;
-import edu.brown.cs.student.Server.LoadHandler;
-import edu.brown.cs.student.Server.Server;
-import edu.brown.cs.student.Server.ViewHandler;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;

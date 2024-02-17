@@ -1,10 +1,7 @@
-package MockServer;
+package edu.brown.cs.student.Server;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Types;
-import edu.brown.cs.student.Server.CensusAPIHandler;
-import edu.brown.cs.student.Server.LoadHandler;
-import edu.brown.cs.student.Server.Server;
 import java.lang.reflect.Type;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
