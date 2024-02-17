@@ -7,7 +7,7 @@ import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import edu.brown.cs.student.Server.CensusAPIHandler;
 import edu.brown.cs.student.Server.Mock.MockHandler;
-import edu.brown.cs.student.Server.MockCaching;
+import edu.brown.cs.student.Server.Mock.MockCaching;
 import edu.brown.cs.student.Server.Server;
 import java.io.IOException;
 import java.lang.reflect.Type;

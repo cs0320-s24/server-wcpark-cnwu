@@ -16,11 +16,34 @@ import java.io.FileReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.Map;
+
+/**
+ * Handles requests to view the contents of the currently loaded CSV file.
+ * This handler allows clients to retrieve the data from the loaded CSV,
+ * formatted as JSON, including information on whether the file contains headers.
+ */
 public class ViewHandler implements Route {
   private final Server server;
+
+  /**
+   * Constructs a ViewHandler with a reference to the server instance.
+   * This reference is used to access the currently loaded CSV file and its configuration.
+   *
+   * @param server The server instance to which this handler belongs.
+   */
   public ViewHandler(Server server) {
     this.server = server;
   }
+
+  /**
+   * Processes incoming requests to view the data of the currently loaded CSV file.
+   * Returns the data as JSON, including a success or error message based on the operation result.
+   *
+   * @param request  The Spark request object, containing parameters for the request.
+   * @param response The Spark response object, used to modify the HTTP response.
+   * @return A JSON string representing the CSV data or an error message if the file is not found or not loaded.
+   * @throws Exception if there's an issue processing the request or reading the file.
+   */
   @Override
   public Object handle(Request request, Response response) throws Exception {
     Moshi moshi = new Moshi.Builder().build();
