@@ -30,30 +30,31 @@ public class LoadHandler implements Route {
     if (check) {
       boolHeader = true;
     }
-    if(headers == null) {
-      throw new IllegalArgumentException("Did not input valid value for headers (ex. True/False)");
-    }
-
     Moshi moshi = new Moshi.Builder().build();
     Type mapStringObject = Types.newParameterizedType(Map.class, String.class, Object.class);
     JsonAdapter<Map<String, Object>> adapter = moshi.adapter(mapStringObject);
     Map<String, Object> responseMap = new HashMap<>();
     String absolute = extractFilenames(pDirectory, file);
-    if (file != null &&  absolute != null) {
-      try {
-        Reader fileReader = new FileReader(absolute);
-        this.server.loadFile(absolute, boolHeader);
-        responseMap.put("result", "success");
-        responseMap.put("filepath", file);
+    if (file != null) {
+      if (absolute != null) {
+        try {
+          Reader fileReader = new FileReader(absolute);
+          this.server.loadFile(absolute, boolHeader);
+          responseMap.put("result", "success");
+          responseMap.put("file", file);
 
-      } catch (FileNotFoundException e) {
-        this.server.loadFile(null, false);
-        responseMap.put("result", "error_datasource");
-        responseMap.put("message", "filepath is invalid");
+        } catch (FileNotFoundException e) {
+          responseMap.put("result", "error_datasource");
+          responseMap.put("message", "filepath is invalid");
+        }
+      } else {
+        responseMap.put("result", "error_bad_request");
+        responseMap.put("message", "file not found within protected directory");
       }
-    } else {
+    }
+    else {
       responseMap.put("result", "error_bad_request");
-      responseMap.put("message", "file not found within protected directory");
+      responseMap.put("message", "file not given");
     }
     return adapter.toJson(responseMap);
   }

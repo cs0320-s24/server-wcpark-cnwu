@@ -18,9 +18,6 @@ public class Server {
           response.header("Access-Control-Allow-Methods", "*");
         });
 
-    // Wrap it with the caching layer
-
-    // Use the caching handler for the "broadband" route
     Spark.get("broadband", new CensusAPIHandler());
     Spark.get("loadcsv", new LoadHandler(this));
     Spark.get("viewcsv", new ViewHandler(this));

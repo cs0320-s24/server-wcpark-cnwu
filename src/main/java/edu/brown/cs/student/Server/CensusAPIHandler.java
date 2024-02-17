@@ -18,6 +18,7 @@ import spark.Route;
 import java.util.List;
 import java.time.*;
 
+//credit to reng1 for moshi adapter and json deserialization. as well as for response map cases
 public class CensusAPIHandler implements Route, ICensusDataSource {
   private String county;
   private String state;
@@ -47,7 +48,7 @@ public class CensusAPIHandler implements Route, ICensusDataSource {
     Type mapStringObject = Types.newParameterizedType(Map.class, String.class, Object.class);
     JsonAdapter<Map<String, Object>> adapter = moshi.adapter(mapStringObject);
 
-    if (this.county != null && this.state != null) {
+    if (this.county != null && this.state != null && !this.county.equals("null") && !this.state.equals("null")) {
       this.getStateThenCounty();
     }
     else {

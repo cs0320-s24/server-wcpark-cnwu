@@ -1,36 +1,44 @@
-package MockServer;
+package edu.brown.cs.student.Server.Mock;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Types;
 import com.squareup.moshi.Moshi;
+import edu.brown.cs.student.Server.ICensusDataSource;
+import edu.brown.cs.student.Server.MockCaching;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import spark.Request;
 import spark.Response;
 import spark.Route;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.time.*;
-//Credit to reng1 - took inspiration for moshi builder and json deserialization.
-public class MockHandler implements Route {
+
+//credit to reng1 for moshi adapter and json deserialization. as well as for response map cases.
+//Also took the states string and counties string from reng1
+public class MockHandler implements Route, ICensusDataSource {
   private String county;
   private String state;
   private String stateCode;
   private String broadbandPercent;
   private Map<String, Object> responseMap;
+  private final MockCaching cachingHandler;
+  public MockHandler() {
+    // Initialize the caching handler with appropriate parameters
+    this.cachingHandler = new MockCaching(this, 50, 1);
+  }
   @Override
   public Object handle(Request request, Response response) throws Exception {
-    this.county = request.queryParams("county");
-    this.state = request.queryParams("state");
+    String state = request.queryParams("state");
+    String county = request.queryParams("county");
+    return cachingHandler.fetchData(state, county);
+  }
+  @Override
+  public Object fetchData(String state, String county) throws Exception {
+    this.state = state;
+    this.county = county;
     this.stateCode = null;
     this.broadbandPercent = null;
     this.responseMap = new HashMap<>();
@@ -38,8 +46,7 @@ public class MockHandler implements Route {
     Moshi moshi = new Moshi.Builder().build();
     Type mapStringObject = Types.newParameterizedType(Map.class, String.class, Object.class);
     JsonAdapter<Map<String, Object>> adapter = moshi.adapter(mapStringObject);
-
-    if (this.county != null && this.state != null) {
+    if (this.county != null && this.state != null && !this.county.equals("null") && !this.state.equals("null")) {
       this.getStateThenCounty();
     }
     else {
@@ -115,12 +122,13 @@ public class MockHandler implements Route {
         this.stateCode = cur.get(1);
       }
     }
-    String counties = "[[\"NAME\",\"S2802_C03_022E\",\"state\",\"county\"],\n"
-        + "  [\"Kent County, Rhode Island\",\"84.1\",\"44\",\"003\"],\n"
-        + "  [\"Providence County, Rhode Island\",\"85.4\",\"44\",\"007\"],\n"
-        + "  [\"Newport County, Rhode Island\",\"90.1\",\"44\",\"005\"],\n"
-        + "  [\"Washington County, Rhode Island\",\"92.8\",\"44\",\"009\"]]";
     if (this.stateCode != null) {
+      String counties = "[[\"NAME\",\"S2802_C03_022E\",\"state\",\"county\"],\n"
+          + "  [\"Kent County, Rhode Island\",\"84.1\",\"44\",\"003\"],\n"
+          + "  [\"Providence County, Rhode Island\",\"85.4\",\"44\",\"007\"],\n"
+          + "  [\"Newport County, Rhode Island\",\"90.1\",\"44\",\"005\"],\n"
+          + "  [\"Washington County, Rhode Island\",\"92.8\",\"44\",\"009\"]]";
+
       LocalDateTime time = LocalDateTime.now();
       res = adapter.fromJson(counties);
 
@@ -131,8 +139,8 @@ public class MockHandler implements Route {
       }
       if (this.broadbandPercent != null) {
         this.responseMap.put("result", "success");
-        this.responseMap.put("Percentage of broadband access in " + this.county, this.broadbandPercent);
         this.responseMap.put("time", time.toString());
+        this.responseMap.put("Percentage of broadband access in " + this.county, this.broadbandPercent);
 
       } else {
         this.responseMap.put("result", "error_bad_request");
@@ -145,6 +153,7 @@ public class MockHandler implements Route {
     }
     this.responseMap.put("state", this.state);
     this.responseMap.put("county", this.county);
+    this.responseMap.put("cache hits", cachingHandler.getStats());
   }
 }
 

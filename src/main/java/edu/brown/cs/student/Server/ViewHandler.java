@@ -14,7 +14,6 @@ import spark.Response;
 import spark.Route;
 import java.io.FileReader;
 import java.io.Reader;
-
 import java.lang.reflect.Type;
 import java.util.Map;
 public class ViewHandler implements Route {
@@ -34,7 +33,6 @@ public class ViewHandler implements Route {
         Reader reader = new FileReader(this.server.getFile());
         CSVParser<CreatorFromRow<CSVString>> parser = new CSVParser<CreatorFromRow<CSVString>>(headers, new CSVString(), reader);
         List<CreatorFromRow<CSVString>> parsed = parser.getParsed();
-
         responseMap.put("result", "success");
         responseMap.put("data", parsed);
       } catch (FileNotFoundException e) {

@@ -53,8 +53,9 @@ public class SearchHandler implements Route {
             responseMap.put("result", "success");
             responseMap.put("query", query);
             responseMap.put("rows", rows);
+            responseMap.put("headers", headers);
             if(colID != null) {
-              responseMap.put("columnId", colID);
+              responseMap.put("colID", colID);
             }
           }
 
