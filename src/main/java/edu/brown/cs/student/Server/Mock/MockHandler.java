@@ -17,6 +17,12 @@ import java.time.*;
 
 //credit to reng1 for moshi adapter and json deserialization. as well as for response map cases.
 //Also took the states string and counties string from reng1
+
+/**
+ * Handles requests to fetch broadband access data for specific states and counties
+ * from the U.S. Census Bureau's API and implements caching to improve performance.
+ * Implements both Spark's Route for HTTP request handling and ICensusDataSource for direct data fetching.
+ */
 public class MockHandler implements Route, ICensusDataSource {
   private String county;
   private String state;
@@ -24,16 +30,40 @@ public class MockHandler implements Route, ICensusDataSource {
   private String broadbandPercent;
   private Map<String, Object> responseMap;
   private final MockCaching cachingHandler;
+
+  /**
+   * Initializes a new CensusAPIHandler instance with a caching layer.
+   */
   public MockHandler() {
     // Initialize the caching handler with appropriate parameters
     this.cachingHandler = new MockCaching(this, 50, 1);
   }
+
+  /**
+   * Handles incoming HTTP requests by extracting state and county parameters
+   * and fetching the broadband access data, either from cache or by making an API call.
+   *
+   * @param request The Spark request object containing query parameters.
+   * @param response The Spark response object for setting response properties.
+   * @return A JSON string representing the broadband access data or an error message.
+   * @throws Exception if there's an issue processing the request.
+   */
   @Override
   public Object handle(Request request, Response response) throws Exception {
     String state = request.queryParams("state");
     String county = request.queryParams("county");
     return cachingHandler.fetchData(state, county);
   }
+  /**
+   * Directly fetches broadband access data for a given state and county. This method is called
+   * by the caching handler upon cache misses and is also usable for direct data fetching
+   * without going through Spark's request-response cycle.
+   *
+   * @param state The state for which broadband data is requested.
+   * @param county The county within the state for which broadband data is requested.
+   * @return A JSON string representing the broadband access data or an error message.
+   * @throws Exception if there's an issue fetching the data from the API.
+   */
   @Override
   public Object fetchData(String state, String county) throws Exception {
     this.state = state;

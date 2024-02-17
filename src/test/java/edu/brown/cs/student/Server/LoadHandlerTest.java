@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Test class for LoadHandler
  */
 public class LoadHandlerTest {
+  //credit to reng1 helped set up testing and cases.
 
   /**
    * Sets up Spark

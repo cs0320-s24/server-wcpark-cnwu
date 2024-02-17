@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *  Test class for ViewHandler
  */
 public class ViewHandlerTest {
+  //credit to reng1 helped set up testing and cases.
   Server server = new Server(new CensusAPIHandler());
 
   /**

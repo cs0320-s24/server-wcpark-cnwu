@@ -24,6 +24,7 @@ import spark.Spark;
  * Test class for SearchHandler
  */
 public class SearchHandlerTest {
+  //credit to reng1 helped set up testing and cases.
   Server server = new Server(new CensusAPIHandler());
 
   /**
